@@ -16,7 +16,7 @@ type BrandStore struct {
 func (s BrandStore) Brand(id string) (*yakit.Brand, error) {
 	var b yakit.Brand
 
-	err := s.DB.QueryRow("SELECT * FROM brands WHERE id = $1", id).Scan(&b.ID, &b.Name)
+	err := s.DB.QueryRow("SELECT id, name FROM brands WHERE id = $1", id).Scan(&b.ID, &b.Name)
 
 	if err != nil {
 		return nil, fmt.Errorf("Can't query brand %s: %v", id, err)
@@ -27,7 +27,7 @@ func (s BrandStore) Brand(id string) (*yakit.Brand, error) {
 
 // Get all brands
 func (s BrandStore) Brands() ([]yakit.Brand, error) {
-	rows, err := s.DB.Query("SELECT * FROM brands")
+	rows, err := s.DB.Query("SELECT id, name FROM brands")
 	defer rows.Close()
 
 	if err != nil {
