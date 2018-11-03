@@ -34,6 +34,14 @@ func main() {
 	r.HandleFunc("/brands/{id:[0-9]+}", bh.UpdateBrand).Methods("POST")
 	r.HandleFunc("/brands/{id:[0-9]+}", bh.DeleteBrand).Methods("DELETE")
 
+	ms := database.ModelStore{DB: conn}
+	mh := server.ModelHandler{Service: ms}
+
+	r.HandleFunc("/models", mh.Models).Methods("GET")
+	r.HandleFunc("/models", mh.CreateModel).Methods("POST")
+	r.HandleFunc("/models/{id:[0-9]+}", mh.Model).Methods("GET")
+	r.HandleFunc("/models/{id:[0-9]+}", mh.UpdateModel).Methods("POST")
+
 	listenAddr := os.Getenv("LISTENADDR")
 
 	srv := server.New(r, listenAddr)
