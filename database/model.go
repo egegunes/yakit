@@ -75,7 +75,7 @@ func (s ModelStore) Models(brandID string) ([]yakit.Model, error) {
 
 // Create a new model
 func (s ModelStore) CreateModel(m yakit.Model) (*yakit.Model, error) {
-	err := s.DB.QueryRow("INSERT INTO models (brand_id, name) VALUES ($1) RETURNING id", m.Name).Scan(&m.ID)
+	err := s.DB.QueryRow("INSERT INTO models (brand_id, name) VALUES ($1, $2) RETURNING id", m.Brand.ID, m.Name).Scan(&m.ID)
 
 	if err != nil {
 		return nil, fmt.Errorf("Can't create model %d: %v", m.ID, err)
