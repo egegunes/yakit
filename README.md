@@ -1,4 +1,4 @@
-# yakit
+# yakit [![Go Report Card](https://goreportcard.com/badge/github.com/egegunes/yakit)](https://goreportcard.com/report/github.com/egegunes/yakit)
 
 ## Setup
 
