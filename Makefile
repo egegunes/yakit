@@ -35,5 +35,8 @@ run:
 logs:
 	sudo docker logs --follow yakit
 
-fmt:
-	go fmt .
+gcr-tag:
+	sudo docker tag yakit eu.gcr.io/kubernetes-222419/yakit
+
+push:
+	sudo -E docker push eu.gcr.io/kubernetes-222419/yakit
