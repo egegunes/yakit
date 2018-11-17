@@ -12,14 +12,14 @@ import (
 )
 
 func main() {
-	logger := log.New(os.Stdout, "yakit ", log.LstdFlags|log.Llongfile)
+	logger := log.New(os.Stderr, "yakit ", log.LstdFlags|log.Llongfile)
 
 	db := database.New(os.Getenv("DBHOST"), os.Getenv("DBNAME"), os.Getenv("DBUSER"), os.Getenv("DBPASS"))
 	logger.Printf("connecting to database Host:%s DB:%s User:%s", os.Getenv("DBHOST"), os.Getenv("DBNAME"), os.Getenv("DBUSER"))
 	conn, err := db.Open()
 
 	if err != nil {
-		log.Fatalf("connection to db failed: %v", err)
+		logger.Fatalf("connection to db failed: %v", err)
 	}
 
 	defer conn.Close()
@@ -61,6 +61,6 @@ func main() {
 	logger.Printf("server starting on %s", listenAddr)
 	err = srv.ListenAndServe()
 	if err != nil {
-		log.Fatalf("server failed to start: %v", err)
+		logger.Fatalf("server failed to start: %v", err)
 	}
 }
