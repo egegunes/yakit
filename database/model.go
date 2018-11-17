@@ -12,7 +12,11 @@ import (
 
 // Struct that satisfies ModelService
 type ModelStore struct {
-	DB *sql.DB
+	db *sql.DB
+}
+
+func NewModelStore(db *sql.DB) *ModelStore {
+	return &ModelStore{db: db}
 }
 
 // Get Model with ID
@@ -23,7 +27,7 @@ func (s ModelStore) Model(id string) (*yakit.Model, error) {
 		JOIN brands ON models.brand_id = brands.id
 		WHERE models.id = $1;`
 
-	err := s.DB.QueryRow(stmt, id).Scan(&m.ID, &m.Name, &m.Brand.ID, &m.Brand.Name)
+	err := s.db.QueryRow(stmt, id).Scan(&m.ID, &m.Name, &m.Brand.ID, &m.Brand.Name)
 
 	if err != nil {
 		return nil, fmt.Errorf("Can't query model %s: %v", id, err)
@@ -49,7 +53,7 @@ func (s ModelStore) Models(brandID string) ([]yakit.Model, error) {
 		stmt.WriteString(fmt.Sprintf(" WHERE models.brand_id = %s", brandID))
 	}
 
-	rows, err := s.DB.Query(stmt.String())
+	rows, err := s.db.Query(stmt.String())
 	defer rows.Close()
 
 	if err != nil {
@@ -75,7 +79,7 @@ func (s ModelStore) Models(brandID string) ([]yakit.Model, error) {
 
 // Create a new model
 func (s ModelStore) CreateModel(m yakit.Model) (*yakit.Model, error) {
-	err := s.DB.QueryRow("INSERT INTO models (brand_id, name) VALUES ($1, $2) RETURNING id", m.Brand.ID, m.Name).Scan(&m.ID)
+	err := s.db.QueryRow("INSERT INTO models (brand_id, name) VALUES ($1, $2) RETURNING id", m.Brand.ID, m.Name).Scan(&m.ID)
 
 	if err != nil {
 		return nil, fmt.Errorf("Can't create model %d: %v", m.ID, err)
@@ -86,7 +90,7 @@ func (s ModelStore) CreateModel(m yakit.Model) (*yakit.Model, error) {
 
 // Update an existing model
 func (s ModelStore) UpdateModel(m yakit.Model) (*yakit.Model, error) {
-	_, err := s.DB.Exec("UPDATE models SET name = $1, brand_id = $2 WHERE id = $3", m.Name, m.Brand.ID, m.ID)
+	_, err := s.db.Exec("UPDATE models SET name = $1, brand_id = $2 WHERE id = $3", m.Name, m.Brand.ID, m.ID)
 
 	if err != nil {
 		return nil, fmt.Errorf("Can't update model %d: %v", m.ID, err)
@@ -97,7 +101,7 @@ func (s ModelStore) UpdateModel(m yakit.Model) (*yakit.Model, error) {
 
 // Delete a model
 func (s ModelStore) DeleteModel(id string) error {
-	_, err := s.DB.Exec("DELETE FROM models WHERE id = $1", id)
+	_, err := s.db.Exec("DELETE FROM models WHERE id = $1", id)
 
 	if err != nil {
 		return fmt.Errorf("Can't delete model %s: %v", id, err)

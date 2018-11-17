@@ -35,7 +35,7 @@ func main() {
 	r.HandleFunc("/brands/{id:[0-9]+}", bh.UpdateBrand).Methods("POST")
 	r.HandleFunc("/brands/{id:[0-9]+}", bh.DeleteBrand).Methods("DELETE")
 
-	ms := database.ModelStore{DB: conn}
+	ms := database.NewModelStore(conn)
 	mh := server.NewModelHandler(ms, logger)
 
 	r.HandleFunc("/models", mh.Models).Methods("GET")
