@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 
 	"yakit/database"
@@ -52,7 +53,10 @@ func main() {
 
 	listenAddr := os.Getenv("LISTENADDR")
 
-	srv := server.New(r, listenAddr)
+	h1 := handlers.LoggingHandler(os.Stdout, r)
+	h2 := handlers.CORS()(h1)
+
+	srv := server.New(h2, listenAddr)
 
 	logger.Printf("server starting on %s", listenAddr)
 	err = srv.ListenAndServe()
