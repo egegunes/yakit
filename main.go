@@ -58,7 +58,7 @@ func main() {
 
 	listenAddr := os.Getenv("LISTENADDR")
 
-	h1 := server.ResponseTimeMiddleware(r)
+	h1 := server.MetricsMiddleware(r)
 	h2 := handlers.LoggingHandler(os.Stdout, h1)
 	h3 := handlers.CORS()(h2)
 
