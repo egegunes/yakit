@@ -5,7 +5,6 @@ ADD go.mod .
 RUN go mod download
 ADD . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o /src/yakitcmd .
-RUN chmod +x /src/yakitcmd
 
 FROM scratch
 COPY --from=builder /src/yakitcmd .
