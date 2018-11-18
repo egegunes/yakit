@@ -42,6 +42,7 @@ func main() {
 	r.HandleFunc("/models", mh.CreateModel).Methods("POST")
 	r.HandleFunc("/models/{id:[0-9]+}", mh.Model).Methods("GET")
 	r.HandleFunc("/models/{id:[0-9]+}", mh.UpdateModel).Methods("POST")
+	r.HandleFunc("/models/{id:[0-9]+}", mh.DeleteModel).Methods("DELETE")
 
 	vs := database.VehicleStore{DB: conn}
 	vh := server.VehicleHandler{Service: vs}
@@ -50,6 +51,7 @@ func main() {
 	r.HandleFunc("/vehicles", vh.CreateVehicle).Methods("POST")
 	r.HandleFunc("/vehicles/{id:[0-9]+}", vh.Vehicle).Methods("GET")
 	r.HandleFunc("/vehicles/{id:[0-9]+}", vh.UpdateVehicle).Methods("POST")
+	r.HandleFunc("/vehicles/{id:[0-9]+}", vh.DeleteVehicle).Methods("DELETE")
 
 	listenAddr := os.Getenv("LISTENADDR")
 
