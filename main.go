@@ -6,6 +6,7 @@ import (
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"yakit/database"
 	"yakit/server"
@@ -25,6 +26,8 @@ func main() {
 	defer conn.Close()
 
 	r := mux.NewRouter()
+
+	r.Handle("/metrics", promhttp.Handler())
 
 	bs := database.BrandStore{DB: conn}
 	bh := server.BrandHandler{Service: bs}
@@ -55,10 +58,11 @@ func main() {
 
 	listenAddr := os.Getenv("LISTENADDR")
 
-	h1 := handlers.LoggingHandler(os.Stdout, r)
-	h2 := handlers.CORS()(h1)
+	h1 := server.ResponseTimeMiddleware(r)
+	h2 := handlers.LoggingHandler(os.Stdout, h1)
+	h3 := handlers.CORS()(h2)
 
-	srv := server.New(h2, listenAddr)
+	srv := server.New(h3, listenAddr)
 
 	logger.Printf("server starting on %s", listenAddr)
 	err = srv.ListenAndServe()
