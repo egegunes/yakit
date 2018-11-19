@@ -28,9 +28,7 @@ func (h ModelHandler) Model(w http.ResponseWriter, r *http.Request) {
 	model, err := h.service.Model(vars["id"])
 	if err != nil {
 		h.logger.Printf("couldn't get model: %v", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Error: %s", err)
-		return
+		http.Error(w, "couldn't get model", http.StatusInternalServerError)
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -45,9 +43,7 @@ func (h ModelHandler) Models(w http.ResponseWriter, r *http.Request) {
 	models, err := h.service.Models(params.Get("brand"))
 	if err != nil {
 		h.logger.Printf("couldn't get models: %v", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Error: %s", err)
-		return
+		http.Error(w, "couldn't get models", http.StatusInternalServerError)
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -60,26 +56,20 @@ func (h ModelHandler) CreateModel(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		h.logger.Printf("couldn't read from request body: %v", err)
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Error: %s", err)
-		return
+		http.Error(w, "couldn't read from request body", http.StatusBadRequest)
 	}
 	defer r.Body.Close()
 
 	var m yakit.Model
 	if err := json.Unmarshal(body, &m); err != nil {
-		h.logger.Printf("couldn't unmarshal json to Model: %v", err)
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Error: %s", err)
-		return
+		h.logger.Printf("couldn't unmarshal json: %v", err)
+		http.Error(w, "couldn't unmarshal json", http.StatusBadRequest)
 	}
 
 	model, err := h.service.CreateModel(m)
 	if err != nil {
-		h.logger.Printf("couldn't create Model: %v", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Error: %s", err)
-		return
+		h.logger.Printf("couldn't create model: %v", err)
+		http.Error(w, "couldn't create model", http.StatusBadRequest)
 	}
 
 	w.Header().Set("Location", fmt.Sprintf("/models/%d", model.ID))
@@ -90,18 +80,14 @@ func (h ModelHandler) UpdateModel(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		h.logger.Printf("couldn't read from request body: %v", err)
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Error: %s", err)
-		return
+		http.Error(w, "couldn't read from request body", http.StatusBadRequest)
 	}
 	defer r.Body.Close()
 
 	var m yakit.Model
 	if err := json.Unmarshal(body, &m); err != nil {
-		h.logger.Printf("couldn't unmarshal json to Model: %v", err)
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Error: %s", err)
-		return
+		h.logger.Printf("couldn't unmarshal json: %v", err)
+		http.Error(w, "couldn't unmarshal json", http.StatusBadRequest)
 	}
 
 	vars := mux.Vars(r)
@@ -109,17 +95,13 @@ func (h ModelHandler) UpdateModel(w http.ResponseWriter, r *http.Request) {
 	m.ID, err = strconv.Atoi(vars["id"])
 	if err != nil {
 		h.logger.Printf("couldn't convert ID %s to integer: %v", m.ID, err)
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Error: %s", err)
-		return
+		http.Error(w, "couldn't convert ID to integer", http.StatusBadRequest)
 	}
 
 	model, err := h.service.UpdateModel(m)
 	if err != nil {
-		h.logger.Printf("couldn't update Model: %v", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Error: %s", err)
-		return
+		h.logger.Printf("couldn't update model: %v", err)
+		http.Error(w, "couldn't update model", http.StatusInternalServerError)
 	}
 
 	w.Header().Set("Location", fmt.Sprintf("/models/%d", model.ID))
@@ -130,10 +112,8 @@ func (h ModelHandler) DeleteModel(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
 	if err := h.service.DeleteModel(vars["id"]); err != nil {
-		h.logger.Printf("couldn't delete Model: %v", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Error: %s", err)
-		return
+		h.logger.Printf("couldn't delete model: %v", err)
+		http.Error(w, "couldn't delete model", http.StatusInternalServerError)
 	}
 
 	w.WriteHeader(http.StatusOK)
