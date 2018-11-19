@@ -3,8 +3,10 @@ package database
 import (
 	"database/sql"
 	"fmt"
+
 	_ "github.com/lib/pq"
-	"yakit/yakit"
+
+	"github.com/egegunes/yakit/yakit"
 )
 
 // Struct that satisfies BrandService

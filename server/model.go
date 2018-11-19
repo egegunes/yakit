@@ -10,7 +10,7 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"yakit/yakit"
+	"github.com/egegunes/yakit/yakit"
 )
 
 type ModelHandler struct {

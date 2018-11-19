@@ -7,7 +7,7 @@ import (
 
 	_ "github.com/lib/pq"
 
-	"yakit/yakit"
+	"github.com/egegunes/yakit/yakit"
 )
 
 // Struct that satisfies VehicleService

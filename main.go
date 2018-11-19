@@ -8,8 +8,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	"yakit/database"
-	"yakit/server"
+	"github.com/egegunes/yakit/database"
+	"github.com/egegunes/yakit/server"
 )
 
 func main() {
