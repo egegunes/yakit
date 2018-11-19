@@ -46,7 +46,7 @@ func main() {
 	r.HandleFunc("/models/{id:[0-9]+}", mh.UpdateModel).Methods("POST")
 	r.HandleFunc("/models/{id:[0-9]+}", mh.DeleteModel).Methods("DELETE")
 
-	vs := database.VehicleStore{DB: db}
+	vs := database.NewVehicleStore(db)
 	vh := server.NewVehicleHandler(vs, logger)
 
 	r.HandleFunc("/vehicles", vh.Vehicles).Methods("GET")

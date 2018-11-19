@@ -12,7 +12,11 @@ import (
 
 // Struct that satisfies VehicleService
 type VehicleStore struct {
-	DB *sql.DB
+	db *sql.DB
+}
+
+func NewVehicleStore(db *sql.DB) *VehicleStore {
+	return &VehicleStore{db: db}
 }
 
 // Get Vehicle with ID
@@ -31,7 +35,7 @@ func (s VehicleStore) Vehicle(id string) (*yakit.Vehicle, error) {
 		JOIN brands ON models.brand_id = brands.id
 		WHERE models.id = $1;`
 
-	err := s.DB.QueryRow(stmt, id).Scan(&v.ID, &v.Year, &v.Model.ID, &v.Model.Name, &v.Model.Brand.ID, &v.Model.Brand.Name)
+	err := s.db.QueryRow(stmt, id).Scan(&v.ID, &v.Year, &v.Model.ID, &v.Model.Name, &v.Model.Brand.ID, &v.Model.Brand.Name)
 
 	if err != nil {
 		return nil, fmt.Errorf("Can't query vehicle %s: %v", id, err)
@@ -63,7 +67,7 @@ func (s VehicleStore) Vehicles(modelID string, brandID string) ([]yakit.Vehicle,
 		stmt.WriteString(fmt.Sprintf(" WHERE brand_id = %s", brandID))
 	}
 
-	rows, err := s.DB.Query(stmt.String())
+	rows, err := s.db.Query(stmt.String())
 	defer rows.Close()
 
 	if err != nil {
@@ -89,7 +93,7 @@ func (s VehicleStore) Vehicles(modelID string, brandID string) ([]yakit.Vehicle,
 
 // Create a new Vehicle
 func (s VehicleStore) CreateVehicle(v yakit.Vehicle) (*yakit.Vehicle, error) {
-	err := s.DB.QueryRow("INSERT INTO vehicles (model_id, year) VALUES ($1, $2) RETURNING id", v.Model.ID, v.Year).Scan(&v.ID)
+	err := s.db.QueryRow("INSERT INTO vehicles (model_id, year) VALUES ($1, $2) RETURNING id", v.Model.ID, v.Year).Scan(&v.ID)
 
 	if err != nil {
 		return nil, fmt.Errorf("Can't create vehicles %d: %v", v.ID, err)
@@ -100,7 +104,7 @@ func (s VehicleStore) CreateVehicle(v yakit.Vehicle) (*yakit.Vehicle, error) {
 
 // Update an existing Vehicle
 func (s VehicleStore) UpdateVehicle(v yakit.Vehicle) (*yakit.Vehicle, error) {
-	_, err := s.DB.Exec("UPDATE vehicles SET year = $1, model_id = $2 WHERE id = $3", v.Year, v.Model.ID, v.ID)
+	_, err := s.db.Exec("UPDATE vehicles SET year = $1, model_id = $2 WHERE id = $3", v.Year, v.Model.ID, v.ID)
 
 	if err != nil {
 		return nil, fmt.Errorf("Can't update vehicle %d: %v", v.ID, err)
@@ -111,7 +115,7 @@ func (s VehicleStore) UpdateVehicle(v yakit.Vehicle) (*yakit.Vehicle, error) {
 
 // Delete a Vehicle
 func (s VehicleStore) DeleteVehicle(id string) error {
-	_, err := s.DB.Exec("DELETE FROM vehicles WHERE id = $1", id)
+	_, err := s.db.Exec("DELETE FROM vehicles WHERE id = $1", id)
 
 	if err != nil {
 		return fmt.Errorf("Can't delete Vehicle %s: %v", id, err)
