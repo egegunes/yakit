@@ -6,28 +6,16 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type DB struct {
-	host     string
-	name     string
-	user     string
-	password string
-}
+func New(host string, name string, user string, password string) (*sql.DB, error) {
+	auth := fmt.Sprintf("user=%s password=%s dbname=%s host=%s sslmode=disable", user, password, name, host)
 
-func New(host string, name string, user string, password string) *DB {
-	return &DB{
-		host:     host,
-		name:     name,
-		user:     user,
-		password: password,
-	}
-}
-
-func (d DB) Open() (*sql.DB, error) {
-	authString := fmt.Sprintf("user=%s password=%s dbname=%s host=%s sslmode=disable", d.user, d.password, d.name, d.host)
-
-	db, err := sql.Open("postgres", authString)
+	db, err := sql.Open("postgres", auth)
 
 	if err != nil {
+		return nil, err
+	}
+
+	if err := db.Ping(); err != nil {
 		return nil, err
 	}
 

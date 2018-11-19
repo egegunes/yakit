@@ -15,15 +15,14 @@ import (
 func main() {
 	logger := log.New(os.Stderr, "yakit ", log.LstdFlags|log.Llongfile)
 
-	db := database.New(os.Getenv("DBHOST"), os.Getenv("DBNAME"), os.Getenv("DBUSER"), os.Getenv("DBPASS"))
 	logger.Printf("connecting to database Host:%s DB:%s User:%s", os.Getenv("DBHOST"), os.Getenv("DBNAME"), os.Getenv("DBUSER"))
-	conn, err := db.Open()
+	db, err := database.New(os.Getenv("DBHOST"), os.Getenv("DBNAME"), os.Getenv("DBUSER"), os.Getenv("DBPASS"))
 
 	if err != nil {
 		logger.Fatalf("connection to db failed: %v", err)
 	}
 
-	defer conn.Close()
+	defer db.Close()
 
 	r := mux.NewRouter()
 
@@ -38,7 +37,7 @@ func main() {
 	r.HandleFunc("/brands/{id:[0-9]+}", bh.UpdateBrand).Methods("POST")
 	r.HandleFunc("/brands/{id:[0-9]+}", bh.DeleteBrand).Methods("DELETE")
 
-	ms := database.NewModelStore(conn)
+	ms := database.NewModelStore(db)
 	mh := server.NewModelHandler(ms, logger)
 
 	r.HandleFunc("/models", mh.Models).Methods("GET")
@@ -47,7 +46,7 @@ func main() {
 	r.HandleFunc("/models/{id:[0-9]+}", mh.UpdateModel).Methods("POST")
 	r.HandleFunc("/models/{id:[0-9]+}", mh.DeleteModel).Methods("DELETE")
 
-	vs := database.VehicleStore{DB: conn}
+	vs := database.VehicleStore{DB: db}
 	vh := server.VehicleHandler{Service: vs}
 
 	r.HandleFunc("/vehicles", vh.Vehicles).Methods("GET")
