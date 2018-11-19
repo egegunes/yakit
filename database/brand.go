@@ -11,14 +11,18 @@ import (
 
 // Struct that satisfies BrandService
 type BrandStore struct {
-	DB *sql.DB
+	db *sql.DB
+}
+
+func NewBrandStore(db *sql.DB) *BrandStore {
+	return &BrandStore{db: db}
 }
 
 // Get brand with ID
 func (s BrandStore) Brand(id string) (*yakit.Brand, error) {
 	var b yakit.Brand
 
-	err := s.DB.QueryRow("SELECT id, name FROM brands WHERE id = $1", id).Scan(&b.ID, &b.Name)
+	err := s.db.QueryRow("SELECT id, name FROM brands WHERE id = $1", id).Scan(&b.ID, &b.Name)
 
 	if err != nil {
 		return nil, fmt.Errorf("Can't query brand %s: %v", id, err)
@@ -29,7 +33,7 @@ func (s BrandStore) Brand(id string) (*yakit.Brand, error) {
 
 // Get all brands
 func (s BrandStore) Brands() ([]yakit.Brand, error) {
-	rows, err := s.DB.Query("SELECT id, name FROM brands")
+	rows, err := s.db.Query("SELECT id, name FROM brands")
 	defer rows.Close()
 
 	if err != nil {
@@ -55,7 +59,7 @@ func (s BrandStore) Brands() ([]yakit.Brand, error) {
 
 // Create a new brand
 func (s BrandStore) CreateBrand(b yakit.Brand) (*yakit.Brand, error) {
-	err := s.DB.QueryRow("INSERT INTO brands (name) VALUES ($1) RETURNING id", b.Name).Scan(&b.ID)
+	err := s.db.QueryRow("INSERT INTO brands (name) VALUES ($1) RETURNING id", b.Name).Scan(&b.ID)
 
 	if err != nil {
 		return nil, fmt.Errorf("Can't create brand %d: %v", b.ID, err)
@@ -66,7 +70,7 @@ func (s BrandStore) CreateBrand(b yakit.Brand) (*yakit.Brand, error) {
 
 // Update an existing brand
 func (s BrandStore) UpdateBrand(b yakit.Brand) (*yakit.Brand, error) {
-	_, err := s.DB.Exec("UPDATE brands SET name = $1 WHERE id = $2", b.Name, b.ID)
+	_, err := s.db.Exec("UPDATE brands SET name = $1 WHERE id = $2", b.Name, b.ID)
 
 	if err != nil {
 		return nil, fmt.Errorf("Can't update brand %d: %v", b.ID, err)
@@ -77,7 +81,7 @@ func (s BrandStore) UpdateBrand(b yakit.Brand) (*yakit.Brand, error) {
 
 // Delete a brand
 func (s BrandStore) DeleteBrand(id string) error {
-	_, err := s.DB.Exec("DELETE FROM brands WHERE id=$1", id)
+	_, err := s.db.Exec("DELETE FROM brands WHERE id=$1", id)
 
 	if err != nil {
 		return fmt.Errorf("Can't delete brand %s: %v", id, err)
