@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -13,61 +14,73 @@ import (
 )
 
 type VehicleHandler struct {
-	Service yakit.VehicleService
+	logger  *log.Logger
+	service yakit.VehicleService
+}
+
+func NewVehicleHandler(s yakit.VehicleService, l *log.Logger) *VehicleHandler {
+	return &VehicleHandler{service: s, logger: l}
 }
 
 func (h VehicleHandler) Vehicle(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	vehicle, err := h.Service.Vehicle(vars["id"])
+	vehicle, err := h.service.Vehicle(vars["id"])
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Error: %s", err)
+		h.logger.Printf("could not get vehicle: %v", err)
+		http.Error(w, "could not get vehicle", http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 
-	json.NewEncoder(w).Encode(vehicle)
+	if err := json.NewEncoder(w).Encode(vehicle); err != nil {
+		h.logger.Printf("could not encode to json: %v", err)
+		http.Error(w, "could not encode to json", http.StatusInternalServerError)
+		return
+	}
 }
 
 func (h VehicleHandler) Vehicles(w http.ResponseWriter, r *http.Request) {
 	params := r.URL.Query()
 
-	vehicles, err := h.Service.Vehicles(params.Get("model"), params.Get("brand"))
+	vehicles, err := h.service.Vehicles(params.Get("model"), params.Get("brand"))
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Error: %s", err)
+		h.logger.Printf("could not get vehicles: %v", err)
+		http.Error(w, "could not get vehicles", http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 
-	json.NewEncoder(w).Encode(vehicles)
+	if err := json.NewEncoder(w).Encode(vehicles); err != nil {
+		h.logger.Printf("could not encode to json: %v", err)
+		http.Error(w, "could not encode to json", http.StatusInternalServerError)
+		return
+	}
 }
 
 func (h VehicleHandler) CreateVehicle(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Error: %s", err)
+		h.logger.Printf("could not read from body: %v", err)
+		http.Error(w, "could not read from body", http.StatusBadRequest)
 		return
 	}
 
 	var v yakit.Vehicle
-	err = json.Unmarshal(body, &v)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Error: %s", err)
+	if err := json.Unmarshal(body, &v); err != nil {
+		h.logger.Printf("could not unmarshal json: %v", err)
+		http.Error(w, "could not unmarshal json", http.StatusBadRequest)
 		return
 	}
 
-	vehicle, err := h.Service.CreateVehicle(v)
+	vehicle, err := h.service.CreateVehicle(v)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Error: %s", err)
+		h.logger.Printf("could not create vehicle: %v", err)
+		http.Error(w, "could not create vehicle", http.StatusInternalServerError)
 		return
 	}
 
@@ -78,34 +91,31 @@ func (h VehicleHandler) CreateVehicle(w http.ResponseWriter, r *http.Request) {
 func (h VehicleHandler) UpdateVehicle(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Error: %s", err)
+		h.logger.Printf("could not read from body: %v", err)
+		http.Error(w, "could not read from body", http.StatusBadRequest)
 		return
 	}
 
 	var v yakit.Vehicle
-	err = json.Unmarshal(body, &v)
-
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Error: %s", err)
+	if err := json.Unmarshal(body, &v); err != nil {
+		h.logger.Printf("could not unmarshal json: %v", err)
+		http.Error(w, "could not unmarshal json", http.StatusBadRequest)
 		return
 	}
 
 	vars := mux.Vars(r)
 
 	v.ID, err = strconv.Atoi(vars["id"])
-
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Error: %s", err)
+		h.logger.Printf("could not convert ID %v to string: %v", v.ID, err)
+		http.Error(w, "could not convert ID to string", http.StatusBadRequest)
 		return
 	}
 
-	vehicle, err := h.Service.UpdateVehicle(v)
+	vehicle, err := h.service.UpdateVehicle(v)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Error: %s", err)
+		h.logger.Printf("could not update vehicle %d: %v", v.ID, err)
+		http.Error(w, "could not update vehicle", http.StatusInternalServerError)
 		return
 	}
 
@@ -116,10 +126,9 @@ func (h VehicleHandler) UpdateVehicle(w http.ResponseWriter, r *http.Request) {
 func (h VehicleHandler) DeleteVehicle(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	err := h.Service.DeleteVehicle(vars["id"])
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Error: %s", err)
+	if err := h.service.DeleteVehicle(vars["id"]); err != nil {
+		h.logger.Printf("could not delete vehicle %d: %v", vars["id"], err)
+		http.Error(w, "could not delete", http.StatusInternalServerError)
 		return
 	}
 
