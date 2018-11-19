@@ -30,7 +30,7 @@ func main() {
 	r.Handle("/metrics", promhttp.Handler())
 
 	bs := database.BrandStore{DB: conn}
-	bh := server.BrandHandler{Service: bs}
+	bh := server.NewBrandHandler(bs, logger)
 
 	r.HandleFunc("/brands", bh.Brands).Methods("GET")
 	r.HandleFunc("/brands", bh.CreateBrand).Methods("POST")

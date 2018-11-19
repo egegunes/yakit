@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -13,31 +14,37 @@ import (
 )
 
 type BrandHandler struct {
-	Service yakit.BrandService
+	logger  *log.Logger
+	service yakit.BrandService
+}
+
+func NewBrandHandler(s yakit.BrandService, l *log.Logger) *BrandHandler {
+	return &BrandHandler{service: s, logger: l}
 }
 
 func (h BrandHandler) Brand(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	brand, err := h.Service.Brand(vars["id"])
+	brand, err := h.service.Brand(vars["id"])
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Error: %s", err)
-		return
+		h.logger.Printf("could not get brand: %v", err)
+		http.Error(w, "could not get brand", http.StatusInternalServerError)
 	}
 
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 
-	json.NewEncoder(w).Encode(brand)
+	if err := json.NewEncoder(w).Encode(brand); err != nil {
+		h.logger.Printf("could not encode brand: %v", err)
+		http.Error(w, "could not encode brand", http.StatusInternalServerError)
+	}
 }
 
 func (h BrandHandler) Brands(w http.ResponseWriter, r *http.Request) {
-	brands, err := h.Service.Brands()
+	brands, err := h.service.Brands()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Error: %s", err)
-		return
+		h.logger.Printf("could not get brands: %v", err)
+		http.Error(w, "could not get brands", http.StatusInternalServerError)
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -49,24 +56,20 @@ func (h BrandHandler) Brands(w http.ResponseWriter, r *http.Request) {
 func (h BrandHandler) CreateBrand(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Error: %s", err)
-		return
+		h.logger.Printf("could not read from body: %v", err)
+		http.Error(w, "could not read from body", http.StatusBadRequest)
 	}
 
 	var b yakit.Brand
-	err = json.Unmarshal(body, &b)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Error: %s", err)
-		return
+	if err := json.Unmarshal(body, &b); err != nil {
+		h.logger.Printf("could not unmarshal json: %v", err)
+		http.Error(w, "could not unmarshal json", http.StatusBadRequest)
 	}
 
-	brand, err := h.Service.CreateBrand(b)
+	brand, err := h.service.CreateBrand(b)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Error: %s", err)
-		return
+		h.logger.Printf("could not create brand: %v", err)
+		http.Error(w, "could not create brand", http.StatusBadRequest)
 	}
 
 	w.Header().Set("Location", fmt.Sprintf("/brand/%d", brand.ID))
@@ -76,35 +79,28 @@ func (h BrandHandler) CreateBrand(w http.ResponseWriter, r *http.Request) {
 func (h BrandHandler) UpdateBrand(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Error: %s", err)
-		return
+		h.logger.Printf("could not read from body: %v", err)
+		http.Error(w, "could not read from body", http.StatusBadRequest)
 	}
 
 	var b yakit.Brand
-	err = json.Unmarshal(body, &b)
-
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Error: %s", err)
-		return
+	if err := json.Unmarshal(body, &b); err != nil {
+		h.logger.Printf("could not unmarshal json: %v", err)
+		http.Error(w, "could not unmarshal json", http.StatusBadRequest)
 	}
 
 	vars := mux.Vars(r)
 
 	b.ID, err = strconv.Atoi(vars["id"])
-
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Error: %s", err)
-		return
+		h.logger.Printf("could not convert id to string: %v", err)
+		http.Error(w, "could not convert id to string: %v", http.StatusBadRequest)
 	}
 
-	brand, err := h.Service.UpdateBrand(b)
+	brand, err := h.service.UpdateBrand(b)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Error: %s", err)
-		return
+		h.logger.Printf("could not update brand: %v", err)
+		http.Error(w, "could not update brand", http.StatusInternalServerError)
 	}
 
 	w.Header().Set("Location", fmt.Sprintf("/brand/%d", brand.ID))
@@ -114,11 +110,10 @@ func (h BrandHandler) UpdateBrand(w http.ResponseWriter, r *http.Request) {
 func (h BrandHandler) DeleteBrand(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	err := h.Service.DeleteBrand(vars["id"])
+	err := h.service.DeleteBrand(vars["id"])
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Error: %s", err)
-		return
+		h.logger.Printf("could not delete brand: %v", err)
+		http.Error(w, "could not delete brand", http.StatusInternalServerError)
 	}
 
 	w.WriteHeader(http.StatusOK)
