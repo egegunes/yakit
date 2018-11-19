@@ -58,11 +58,12 @@ func main() {
 
 	listenAddr := os.Getenv("LISTENADDR")
 
-	h1 := server.MetricsMiddleware(r)
-	h2 := handlers.LoggingHandler(os.Stdout, h1)
-	h3 := handlers.CORS()(h2)
+	h1 := handlers.RecoveryHandler()(r)
+	h2 := server.MetricsMiddleware(h1)
+	h3 := handlers.LoggingHandler(os.Stdout, h2)
+	h4 := handlers.CORS()(h3)
 
-	srv := server.New(h3, listenAddr)
+	srv := server.New(h4, listenAddr)
 
 	logger.Printf("server starting on %s", listenAddr)
 	err = srv.ListenAndServe()
