@@ -37,7 +37,7 @@ func (s ModelStore) Model(id string) (*yakit.Model, error) {
 }
 
 // Get all models
-func (s ModelStore) Models(brandID string) ([]yakit.Model, error) {
+func (s ModelStore) Models(brandID string, brandName string) ([]yakit.Model, error) {
 	var stmt strings.Builder
 
 	stmt.WriteString(`SELECT
@@ -46,11 +46,15 @@ func (s ModelStore) Models(brandID string) ([]yakit.Model, error) {
 				brands.id as brand_id,
 				brands.name as brand_name
 			    FROM models
-			    JOIN brands
+			    INNER JOIN brands
 			    ON models.brand_id = brands.id`)
 
 	if brandID != "" {
 		stmt.WriteString(fmt.Sprintf(" WHERE models.brand_id = %s", brandID))
+	}
+
+	if brandName != "" {
+		stmt.WriteString(fmt.Sprintf(" WHERE LOWER(brands.name) = LOWER('%s')", brandName))
 	}
 
 	rows, err := s.db.Query(stmt.String())

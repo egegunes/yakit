@@ -40,7 +40,7 @@ func (h ModelHandler) Model(w http.ResponseWriter, r *http.Request) {
 func (h ModelHandler) Models(w http.ResponseWriter, r *http.Request) {
 	params := r.URL.Query()
 
-	models, err := h.service.Models(params.Get("brand"))
+	models, err := h.service.Models(params.Get("brand_id"), params.Get("brand_name"))
 	if err != nil {
 		h.logger.Printf("couldn't get models: %v", err)
 		http.Error(w, "couldn't get models", http.StatusInternalServerError)
