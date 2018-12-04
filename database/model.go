@@ -54,11 +54,11 @@ func (s ModelStore) Models(brandID string) ([]yakit.Model, error) {
 	}
 
 	rows, err := s.db.Query(stmt.String())
-	defer rows.Close()
-
 	if err != nil {
 		return nil, fmt.Errorf("Can't query models: %v", err)
 	}
+
+	defer rows.Close()
 
 	var models []yakit.Model
 
