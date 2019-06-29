@@ -7,6 +7,6 @@ up:
 rundb:
 	sudo docker run -d --rm --env-file .env --name yakitdb --network yakit postgres
 psql:
-	sudo docker exec -it postgres psql -U postgres postgres
+	sudo docker exec -it yakitdb psql -U yakit yakit
 provision:
 	scripts/provision.sh
