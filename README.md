@@ -6,14 +6,14 @@
 $ sudo docker network create yakit
 
 # Run Postgresql container
-$ sudo make db
+$ make rundb
 
-# Import DB structure
-$ sudo make initial
+# Provision test database
+$ make provision
 
-# Import dummy data
-$ sudo make dummy
+# Build yakit
+$ make
 
-# Run yakit
-$ sudo make run
+# Run
+$ make up
 ```
