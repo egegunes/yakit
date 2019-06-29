@@ -1,8 +1,8 @@
 #!/bin/bash
 
-DBCONTAINERNAME=postgres
-DBNAME=postgres
-DBUSER=postgres
+DBCONTAINERNAME=yakitdb
+DBNAME=yakit
+DBUSER=yakit
 MIGRATIONSFOLDER=$(pwd)/db/migrations
 DUMMYDATAFOLDER=$(pwd)/db/dummy
 

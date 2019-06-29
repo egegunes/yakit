@@ -15,8 +15,17 @@ import (
 func main() {
 	logger := log.New(os.Stderr, "yakit ", log.LstdFlags|log.Llongfile)
 
-	logger.Printf("connecting to database Host:%s DB:%s User:%s", os.Getenv("DBHOST"), os.Getenv("DBNAME"), os.Getenv("DBUSER"))
-	db, err := database.New(os.Getenv("DBHOST"), os.Getenv("DBNAME"), os.Getenv("DBUSER"), os.Getenv("DBPASS"))
+	logger.Printf("connecting to database Host:%s DB:%s User:%s",
+		os.Getenv("POSTGRES_HOST"),
+		os.Getenv("POSTGRES_DB"),
+		os.Getenv("POSTGRES_USER"),
+	)
+	db, err := database.New(
+		os.Getenv("POSTGRES_HOST"),
+		os.Getenv("POSTGRES_DB"),
+		os.Getenv("POSTGRES_USER"),
+		os.Getenv("POSTGRES_PASSWORD"),
+	)
 
 	if err != nil {
 		logger.Fatalf("connection to db failed: %v", err)
