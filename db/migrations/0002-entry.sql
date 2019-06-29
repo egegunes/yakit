@@ -1,0 +1,2 @@
+ALTER TABLE entries ALTER COLUMN consumption TYPE REAL;
+ALTER TABLE entries ADD COLUMN usage_type INTEGER;
