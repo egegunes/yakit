@@ -64,6 +64,15 @@ func main() {
 	r.HandleFunc("/vehicles/{id:[0-9]+}", vh.UpdateVehicle).Methods("POST")
 	r.HandleFunc("/vehicles/{id:[0-9]+}", vh.DeleteVehicle).Methods("DELETE")
 
+	es := database.NewEntryStore(db)
+	eh := server.NewEntryHandler(es, logger)
+
+	r.HandleFunc("/entries", eh.Entries).Methods("GET")
+	r.HandleFunc("/entries", eh.CreateEntry).Methods("POST")
+	r.HandleFunc("/entries/{id:[0-9]+}", eh.Entry).Methods("GET")
+	r.HandleFunc("/entries/{id:[0-9]+}", eh.UpdateEntry).Methods("POST")
+	r.HandleFunc("/entries/{id:[0-9]+}", eh.DeleteEntry).Methods("DELETE")
+
 	listenAddr := os.Getenv("LISTENADDR")
 
 	h1 := handlers.RecoveryHandler()(r)

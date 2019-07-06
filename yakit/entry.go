@@ -12,3 +12,11 @@ type Entry struct {
 	UsageType   int
 	Vehicle     Vehicle
 }
+
+type EntryService interface {
+	Entry(id string) (*Entry, error)
+	Entries() ([]Entry, error)
+	CreateEntry(v Entry) (*Entry, error)
+	UpdateEntry(v Entry) (*Entry, error)
+	DeleteEntry(id string) error
+}
