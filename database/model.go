@@ -23,11 +23,27 @@ func NewModelStore(db *sql.DB) *ModelStore {
 func (s ModelStore) Model(id string) (*yakit.Model, error) {
 	var m yakit.Model
 
-	stmt := `SELECT models.id, models.name, brands.id, brands.name FROM models
+	stmt := `SELECT
+		    models.id,
+		    models.name,
+		    models.type,
+		    models.engine_cc,
+		    models.engine_hp,
+		    brands.id,
+		    brands.name
+		FROM models
 		JOIN brands ON models.brand_id = brands.id
 		WHERE models.id = $1;`
 
-	err := s.db.QueryRow(stmt, id).Scan(&m.ID, &m.Name, &m.Brand.ID, &m.Brand.Name)
+	err := s.db.QueryRow(stmt, id).Scan(
+		&m.ID,
+		&m.Name,
+		&m.Type,
+		&m.EngineCC,
+		&m.EngineHP,
+		&m.Brand.ID,
+		&m.Brand.Name,
+	)
 
 	if err != nil {
 		return nil, fmt.Errorf("Can't query model %s: %v", id, err)
@@ -43,6 +59,9 @@ func (s ModelStore) Models(brandID string) ([]yakit.Model, error) {
 	stmt.WriteString(`SELECT
 				models.id,
 				models.name,
+				models.type,
+				models.engine_cc,
+				models.engine_hp,
 				brands.id as brand_id,
 				brands.name as brand_name
 			    FROM models
@@ -65,7 +84,15 @@ func (s ModelStore) Models(brandID string) ([]yakit.Model, error) {
 	for rows.Next() {
 		var m yakit.Model
 
-		err = rows.Scan(&m.ID, &m.Name, &m.Brand.ID, &m.Brand.Name)
+		err = rows.Scan(
+			&m.ID,
+			&m.Name,
+			&m.Type,
+			&m.EngineCC,
+			&m.EngineHP,
+			&m.Brand.ID,
+			&m.Brand.Name,
+		)
 
 		if err != nil {
 			return nil, fmt.Errorf("Can't query models: %v", err)
@@ -79,7 +106,25 @@ func (s ModelStore) Models(brandID string) ([]yakit.Model, error) {
 
 // Create a new model
 func (s ModelStore) CreateModel(m yakit.Model) (*yakit.Model, error) {
-	err := s.db.QueryRow("INSERT INTO models (brand_id, name) VALUES ($1, $2) RETURNING id", m.Brand.ID, m.Name).Scan(&m.ID)
+	err := s.db.QueryRow(`INSERT INTO models (
+		brand_id,
+		name,
+		type,
+		engine_cc,
+		engine_hp
+	    ) VALUES (
+		$1,
+		$2,
+		$3,
+		$4,
+		$5
+	    ) RETURNING id`,
+		m.Brand.ID,
+		m.Name,
+		m.Type,
+		m.EngineCC,
+		m.EngineHP,
+	).Scan(&m.ID)
 
 	if err != nil {
 		return nil, fmt.Errorf("Can't create model %d: %v", m.ID, err)
@@ -90,7 +135,13 @@ func (s ModelStore) CreateModel(m yakit.Model) (*yakit.Model, error) {
 
 // Update an existing model
 func (s ModelStore) UpdateModel(m yakit.Model) (*yakit.Model, error) {
-	_, err := s.db.Exec("UPDATE models SET name = $1, brand_id = $2 WHERE id = $3", m.Name, m.Brand.ID, m.ID)
+	_, err := s.db.Exec(`UPDATE models SET
+				name = $1,
+				brand_id = $2,
+				type = $3,
+				engine_cc = $4,
+				engine_hp = $5
+			    WHERE id = $6`, m.Name, m.Brand.ID, m.Type, m.EngineCC, m.EngineHP, m.ID)
 
 	if err != nil {
 		return nil, fmt.Errorf("Can't update model %d: %v", m.ID, err)
