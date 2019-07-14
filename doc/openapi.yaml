@@ -1,0 +1,180 @@
+openapi: "3.0"
+
+info:
+  title: Yakit Backend
+  description: Backend of yakit.co
+  license:
+    name: AGPL-3.0
+  version: 0.0.0
+  contact:
+    name: Ege Gunes
+    email: egegunes@gmail.com
+    url: https://ege.dev
+
+servers:
+  - url: https://yakit.testenv.site
+    description: Development server
+
+components:
+  parameters:
+    id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+  schemas:
+    brand:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    model:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        brand:
+          allOf:
+            - $ref: "#/components/schemas/brand"
+        type:
+          type: integer
+        enginecc:
+          type: integer
+        enginehp:
+          type: integer
+    vehicle:
+      type: object
+      properties:
+        id:
+          type: integer
+        year:
+          type: integer
+        model:
+          allOf:
+            - $ref: "#/components/schemas/model"
+    entry:
+      type: object
+      properties:
+        id:
+          type: integer
+        consumption:
+          type: float
+        message:
+          type: string
+        usagetype:
+          type: integer
+        vehicle:
+          allOf:
+            - $ref: "#/components/schemas/vehicle"
+
+
+paths:
+  /brands:
+    get:
+      summary: Get all brands
+      description: Returns all brands
+      responses:
+        "200":
+          description: Success response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/brand"
+  /brands/{id}:
+    get:
+      summary: Get brand by ID
+      description: Returns brand by ID
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: Success response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/brand"
+  /models:
+    get:
+      summary: Get all models
+      description: Returns all models
+      responses:
+        "200":
+          description: Success response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/model"
+  /models/{id}:
+    get:
+      summary: Get model by ID
+      description: Returns model by ID
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: Success response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/model"
+  /vehicles:
+    get:
+      summary: Get all vehicles
+      description: Returns all vehicles
+      responses:
+        "200":
+          description: Success response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/vehicle"
+  /vehicles/{id}:
+    get:
+      summary: Get vehicle by ID
+      description: Returns vehicle by ID
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: Success response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/vehicle"
+  /entries:
+    get:
+      summary: Get all entries
+      description: Returns all entries
+      responses:
+        "200":
+          description: Success response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/entry"
+  /entries/{id}:
+    get:
+      summary: Get entry by ID
+      description: Returns entry by ID
+      parameters:
+        - $ref: "#/components/parameters/id"
+      responses:
+        "200":
+          description: Success response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/entry"

@@ -1,3 +1,5 @@
+.PHONY: doc
+
 TAG=yakit
 
 all: build up
@@ -14,3 +16,5 @@ psql:
 	sudo docker exec -it yakitdb psql -U yakit yakit
 provision:
 	scripts/provision.sh
+doc:
+	sudo docker run --rm -it -v $(PWD)/doc:/src/doc egegunes/redoc
